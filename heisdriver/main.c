@@ -26,6 +26,9 @@ int main() {
             elev_set_motor_direction(DIRN_STOP);
             break;
         }
+        
+        //changing lights when reaching floors
+        //elev_set_floor_indicator(elev_get_floor_sensor_signal());
     }
 
     return 0;
