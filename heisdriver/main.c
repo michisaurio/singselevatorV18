@@ -1,4 +1,6 @@
 #include "elev.h"
+#include "button_lights.h"
+#include "state_machine.h"
 #include <stdio.h>
 
 
@@ -11,9 +13,15 @@ int main() {
 
     printf("Press STOP button to stop elevator and exit program.\n");
 
-    elev_set_motor_direction(DIRN_UP);
-
+	elev_motor_direction_t motor_dir_memory = DIRN_STOP;
+    elev_set_motor_direction(motor_dir_memory);
+    
+    state_type_t current_state = IDLE;
+    
+    int last_floor = elev_get_floor_sensor_signal();
+    
     while (1) {
+    	/*
         // Change direction when we reach top/bottom floor
         if (elev_get_floor_sensor_signal() == N_FLOORS - 1) {
             elev_set_motor_direction(DIRN_DOWN);
@@ -26,10 +34,13 @@ int main() {
             elev_set_motor_direction(DIRN_STOP);
             break;
         }
+        */
         
-        //changing lights when reaching floors
-        //elev_set_floor_indicator(elev_get_floor_sensor_signal());
-    }
+        //lamp button dance
+        determineNextState(&current_state, &motor_dir_memory, &last_floor);
+        checkPushedFloorButton();
+        
+	}     
 
     return 0;
 }

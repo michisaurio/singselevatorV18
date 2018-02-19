@@ -8,10 +8,10 @@ CFLAGS = -g -Wall
 LDFLAGS = -lcomedi -lm
 
 # list of sources
-ELEVSRC = elev.c io.c main.c
+ELEVSRC = elev.c io.c main.c button_lights.c state_machine.c
 
 # program executable file name.
-TARGET = heis
+TARGET = heis2
 
 # top-level rule, to compile everything.
 all: $(TARGET)

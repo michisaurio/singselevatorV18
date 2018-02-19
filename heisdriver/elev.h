@@ -5,11 +5,10 @@
 #ifndef __INCLUDE_DRIVER_H__
 #define __INCLUDE_DRIVER_H__
 
-
+// Number of signals and lamps on a per-floor basis (excl sensor)
+#define N_BUTTONS 3
 // Number of floors
 #define N_FLOORS 4
-
-
 
 /**
   Initialize elevator.
@@ -35,8 +34,6 @@ typedef enum tag_elev_motor_direction {
   @param dirn New direction of the elevator.
 */
 void elev_set_motor_direction(elev_motor_direction_t dirn);
-
-
 
 /**
   Turn door-open lamp on or off.
@@ -118,6 +115,7 @@ int elev_get_button_signal(elev_button_type_t button, int floor);
 */
 void elev_set_button_lamp(elev_button_type_t button, int floor, int value);
 
-
+int elev_get_button_lamp(elev_button_type_t button, int floor);
 
 #endif // #ifndef __INCLUDE_DRIVER_H__
+

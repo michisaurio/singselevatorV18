@@ -11,8 +11,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-// Number of signals and lamps on a per-floor basis (excl sensor)
-#define N_BUTTONS 3
+
 
 static const int lamp_channel_matrix[N_FLOORS][N_BUTTONS] = {
     {LIGHT_UP1, LIGHT_DOWN1, LIGHT_COMMAND1},
@@ -143,4 +142,13 @@ void elev_set_button_lamp(elev_button_type_t button, int floor, int value) {
         io_set_bit(lamp_channel_matrix[floor][button]);
     else
         io_clear_bit(lamp_channel_matrix[floor][button]);
+}
+
+int elev_get_button_lamp(elev_button_type_t button, int floor) {
+    assert(floor >= 0);
+    assert(floor < N_FLOORS);
+    if((button == BUTTON_CALL_UP && floor == N_FLOORS - 1)||(button == BUTTON_CALL_DOWN && floor== 0)) 
+    return -1;
+    assert(button == BUTTON_CALL_UP || button == BUTTON_CALL_DOWN || button == BUTTON_COMMAND);
+    return io_read_bit(lamp_channel_matrix[floor][button]);
 }
