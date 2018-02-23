@@ -147,8 +147,9 @@ void elev_set_button_lamp(elev_button_type_t button, int floor, int value) {
 int elev_get_button_lamp(elev_button_type_t button, int floor) {
     assert(floor >= 0);
     assert(floor < N_FLOORS);
-    if((button == BUTTON_CALL_UP && floor == N_FLOORS - 1)||(button == BUTTON_CALL_DOWN && floor== 0)) 
-    return -1;
     assert(button == BUTTON_CALL_UP || button == BUTTON_CALL_DOWN || button == BUTTON_COMMAND);
-    return io_read_bit(lamp_channel_matrix[floor][button]);
+    if((button == BUTTON_CALL_UP && floor == N_FLOORS - 1)||(button == BUTTON_CALL_DOWN && floor== 0))
+      return -1;
+    else
+      return io_read_bit(lamp_channel_matrix[floor][button]);
 }

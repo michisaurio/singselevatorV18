@@ -8,10 +8,10 @@ CFLAGS = -g -Wall
 LDFLAGS = -lcomedi -lm
 
 # list of sources
-ELEVSRC = elev.c io.c main.c button_lights.c state_machine.c
+ELEVSRC = elev.c io.c main.c button_lights.c state_machine.c door_timer.c
 
 # program executable file name.
-TARGET = heis2
+TARGET = heis
 
 # top-level rule, to compile everything.
 all: $(TARGET)
@@ -25,7 +25,7 @@ $(TARGET): $(ELEVOBJ)
 
 # Compile: create object files from C source files.
 %.o : %.c
-	$(CC) $(CFLAGS) -c $< -o $@ 
+	$(CC) $(CFLAGS) -c $< -o $@
 
 # rule for cleaning re-compilable files.
 clean:

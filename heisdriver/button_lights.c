@@ -11,10 +11,10 @@ void checkPushedFloorButton(){
 				button_bit=elev_get_button_signal(i,j);
 				if(button_bit==1){
 					elev_set_button_lamp(i,j,button_bit);
-					printf("Alejandro %d, %d, %d\n",i,j,elev_get_button_lamp(i,j));					
+					//printf("Alejandro %d, %d, %d\n",i,j,elev_get_button_lamp(i,j));					
 				}
 			}
-		}	
+		}
 	}
 
 }
