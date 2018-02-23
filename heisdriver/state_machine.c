@@ -1,67 +1,12 @@
-/*
-void determineDirection(elev_motor_direction_t* motor_dir, int floor){
-	//idle
-	if(*motor_dir==DIRN_STOP){
-		if(floor<=ceil(N_FLOORS/2)){
-			for(int i=0; i<N_FLOORS;i++){
-				if(i!=floor && get_order_status(BUTTON_CALL_DOWN,floor)==1))
-
-					elev_set_motor_direction(DIRN_DOWN);
-					break;
-				} else if(i!=floor && get_order_status(BUTTON_CALL_UP,floor)==1))
-					elev_set_motor_direction(DIRN_UP);
-					break;
-				}
-			}
-		} else(){
-			for(int i=N_FLOORS-1;i>=0;i--){
-				if(i!=floor && get_order_status(BUTTON_CALL_UP,floor)==1))
-					elev_set_motor_direction(DIRN_UP);
-					break;
-				}else if(i!=floor && get_order_status(BUTTON_CALL_DOWN,floor)==1))
-					elev_set_motor_direction(DIRN_DOWN);
-					break;
-				}
-			}
-		}
-	}
-}
-*/
-
 #include "state_machine.h"
 #include "elev.h"
 #include "door_timer.h"
 #include <stdio.h> //Eliminar mas tarde
 
-// Mover a otro archivo. Trata más sobre cómo se selecciona la siguiente orden
-int closestOrderUp(int floor){
-	int dist = -1;
-	for(int f=N_FLOORS-1;f>floor;f--){
-		for(int b=0; b<N_BUTTONS;b++){
-				if(get_order_status(b,f)==1){
-					dist = f-floor;
-			}
-		}
-	}
-	return dist;
-}
-// Mover a otro archivo. Trata más sobre cómo se selecciona la siguiente orden
-int closestOrderDown(int floor){
-	int dist = -1;
-	for(int f=0;f<floor;f++){
-		for(int b=0; b<N_BUTTONS;b++){
-				if(get_order_status(b,f)==1){
-					dist = floor-f;
-			}
-		}
-	}
-	return dist;
-}
-
 // Assumes that we start at IDLE state, on a floor.
-// Se tiene que iniciar motor_dir_memory igual a DIRN_STOP?
+// Se tiene que iniciar motor_direction igual a DIRN_STOP?
 static state_type_t state = IDLE;
-static elev_motor_direction_t motor_dir_memory = DIRN_STOP;
+static elev_motor_direction_t motor_direction = DIRN_STOP;
 
 void determine_next_state(){
 
@@ -71,60 +16,89 @@ void determine_next_state(){
 
 	switch(state){
 
-	case IDLE:
-		// In IDLE, sensor_signal>=0, i.e., the elevator is at a floor
-		// If cab button pressed, opens door and turns off cab button light.
+	case IDLE: // In IDLE, sensor_signal>=0, i.e., the elevator is at a floor
+		// From IDLE to OPENDOOR : If button for/at current floor pressed.
+		// If cab button pressed
 		if(get_order_status(BUTTON_COMMAND,sensor_signal)==1){
 			state = OPENDOOR
 			door_timer_start();
 			elev_set_door_open_lamp(1);
+			motor_direction = DIRN_STOP;
 			clear_order_status(BUTTON_COMMAND,sensor_signal);			
 			printf("La puerta se abre. Alguien se quedó dormido en el ascensor.\n");
-		} // 
-		else if( get_order_status(BUTTON_CALL_UP,sensor_signal)==1 || get_order_status(BUTTON_CALL_DOWN,sensor_signal)==1) {
+		} // If hall button up pressed
+		else if(get_order_status(BUTTON_CALL_UP,sensor_signal)==1){
+			state = OPENDOOR
+			door_timer_start();
+			elev_set_door_open_lamp(1);
+			motor_direction = DIRN_UP;
+			clear_order_status(BUTTON_CALL_UP,sensor_signal);
+			printf("La puerta se abre porque alguien quiere subir.\n");
+		} // If hall button down pressed
+		else if(get_order_status(BUTTON_CALL_DOWN,sensor_signal)==1){
 			state = OPENDOOR;
 			door_timer_start();
 			elev_set_door_open_lamp(1);
-			printf("La puerta se abre. Alguien quiere entrar.\n");
+			motor_direction = DIRN_DOWN;
+			printf("La puerta se abre porque alguien quiere bajar.\n");
 		}
-		 else
-		{ //checks if there are orders in the floors over or under, and decides where to go
-			int disOrderUp = closestOrderUp(sensor_signal);
-			int distOrderDown = closestOrderDown(sensor_signal);
-			if (disOrderUp>0 && (distOrderDown==-1 || distOrderDown >= disOrderUp)) {
-				motor_dir_memory = DIRN_UP;
-				elev_set_motor_direction(motor_dir_memory);
+		else if // From IDLE to DRIVE : If button for/at another floor pressed.
+		{ // A cab button for another floor is pressed : Biased towards up.
+			for(int floor=N_FLOORS-1; floor>sensor_signal; floor--){
+				if(get_order_status(BUTTON_COMMAND,floor)==1){
+					state = DRIVE;
+					motor_direction = DIRN_UP;
+					elev_set_motor_direction(motor_direction);
+					printf("Alguien se quedó dormido en el ascensor camino hacia arriba.\n");
+					break;
+				}
+			}
+			for(int floor=0; floor<sensor_signal; floor++){
+				if(get_order_status(BUTTON_COMMAND,floor)==1){
+					state = DRIVE;
+					motor_direction = DIRN_DOWN;
+					elev_set_motor_direction(motor_direction);
+					printf("Alguien se quedó dormido en el ascensor camino hacia abajo.\n");
+					break;
+					}
+				}
+			// A hall button at another is pressed : Moves towards the closest floor. Biased towards up.
+			int dist_order_upstairs   = closest_hall_order_upstairs(sensor_signal);
+			int dist_order_downstairs = closest_hall_order_downstairs(sensor_signal);
+			if (dist_order_upstairs<N_FLOORS && dist_order_upstairs<=dist_order_downstairs) {
 				state = DRIVE;
-				printf("Se mueve hacia arriba!\n");
-			} else if (distOrderDown>0 && (disOrderUp==-1|| disOrderUp>distOrderDown)) {
-				motor_dir_memory = DIRN_DOWN;
-				elev_set_motor_direction(motor_dir_memory);
+				motor_direction = DIRN_UP;
+				elev_set_motor_direction(motor_direction);
+				printf("Alguien arriba quiere viajar.\n");				
+			} else if (dist_order_downstairs<N_FLOORS && dist_order_downstairs<dist_order_upstairs) {
 				state = DRIVE;
-				printf("Se mueve hacia abajo!\n");
+				motor_direction = DIRN_DOWN;
+				elev_set_motor_direction(motor_direction);
+				printf("Alguien abajo quiere viajar.\n");
 			}
 		}
+		// Otherwise stays at IDLE.
 		break;
 
 	case DRIVE:
-		//int sensor_signal = elev_get_floor_sensor_signal();
+		// From IDLE to OPENDOOR : Is necessary that a floor is reached first.
 		if(sensor_signal>=0){	//A floor is reached
-			//sensor_signal=sensor_signal;
-			elev_set_floor_indicator(sensor_signal);	//updates floor indicator
-			if(get_order_status(BUTTON_COMMAND, sensor_signal)){
+			elev_set_floor_indicator(sensor_signal);	//Updates floor indicator
+			if(get_order_status(BUTTON_COMMAND, sensor_signal)==1){
 				elev_set_motor_direction(DIRN_STOP);
 				elev_set_button_lamp(BUTTON_COMMAND, sensor_signal, 0);
 				state = OPENDOOR;
 				door_timer_start();
 				elev_set_door_open_lamp(1);
 				printf("La puerta se abre. Alguien se quiere bajar. \n");
-			}else if(motor_dir_memory==DIRN_UP && get_order_status(BUTTON_CALL_UP,sensor_signal)==1){
+			}else if(motor_direction==DIRN_UP && get_order_status(BUTTON_CALL_UP,sensor_signal)==1){
 				elev_set_motor_direction(DIRN_STOP);
 				elev_set_button_lamp(BUTTON_CALL_UP, sensor_signal, 0);
 				state = OPENDOOR;
 				door_timer_start();
 				elev_set_door_open_lamp(1);
 				printf("La puerta se abre. Alguien quiere unirse camino hacia arriba.\n");
-			}else if (motor_dir_memory==DIRN_DOWN && get_order_status(BUTTON_CALL_DOWN,sensor_signal)==1){
+			}else if (motor_direction==DIRN_DOWN && get_order_status(BUTTON_CALL_DOWN,sensor_signal)==1){
 				elev_set_motor_direction(DIRN_STOP);
 				elev_set_button_lamp(BUTTON_CALL_DOWN, sensor_signal, 0);
 				state = OPENDOOR;
@@ -135,7 +109,6 @@ void determine_next_state(){
 		}
 		break;
 
-
 	case OPENDOOR:
 		door_timer_update();
 		elev_set_button_lamp(BUTTON_COMMAND, sensor_signal, 0);
@@ -144,10 +117,10 @@ void determine_next_state(){
 		if(is_elapsed_time_over_threshold(open_door_threshold_time)){
 			int disOrderUp = closestOrderUp(sensor_signal);
 			int distOrderDown = closestOrderDown(sensor_signal);
-			if(motor_dir_memory == DIRN_UP){
+			if(motor_direction == DIRN_UP){
 				if(get_order_status(BUTTON_CALL_UP,sensor_signal)==1 || disOrderUp>0){
 					elev_set_button_lamp(BUTTON_CALL_UP, sensor_signal, 0);
-					elev_set_motor_direction(motor_dir_memory);
+					elev_set_motor_direction(motor_direction);
 					state=DRIVE;
 				}else if(distOrderDown>0){
 					elev_set_motor_direction(DIRN_DOWN);
@@ -157,10 +130,10 @@ void determine_next_state(){
 					state=IDLE;
 				}
 			}
-			if(motor_dir_memory == DIRN_DOWN){
+			if(motor_direction == DIRN_DOWN){
 				if(get_order_status(BUTTON_CALL_DOWN,sensor_signal)==1 || distOrderDown>0){
 					elev_set_button_lamp(BUTTON_CALL_DOWN, sensor_signal, 0);
-					elev_set_motor_direction(motor_dir_memory);
+					elev_set_motor_direction(motor_direction);
 					state=DRIVE;
 				}else if(disOrderUp>0){
 					elev_set_motor_direction(DIRN_DOWN);

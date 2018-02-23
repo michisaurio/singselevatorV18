@@ -42,6 +42,30 @@ void clear_all_orders(){
 		}
 	}
 }
+// Cab orders are excluded!
+int closest_hall_order_upstairs(int current_floor){
+	int dist = N_FLOORS;
+	for(int floor=N_FLOORS-1;floor>current_floor;floor--){
+		for(int button=0; button<N_BUTTONS-1;button++){
+				if(get_order_status(button,floor)==1){
+					dist = floor-current_floor;
+			}
+		}
+	}
+	return dist;
+}
+// Cab orders are excluded!
+int closest_hall_order_downstairs(int current_floor){
+	int dist = N_FLOORS;
+	for(int floor=0;floor<current_floor;floor++){
+		for(int button=0; button<N_BUTTONS-1;button++){
+				if(get_order_status(button,floor)==1){
+					dist = current_floor-floor;
+			}
+		}
+	}
+	return dist;
+}
 
 /*
 void updateFloorLights(){
