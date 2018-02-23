@@ -1,8 +1,8 @@
-typedef struct door_timer{
-      double start_time
-      double elapsed_time
-      int is_timer_on
-}
+typedef struct door_timer_struct{
+      double start_time;
+      double elapsed_time;
+      int is_timer_on;
+} door_timer_t;
 
 void door_timer_start();
 

@@ -21,7 +21,7 @@ int main() {
         }
 
         check_pressed_floor_button();
-        determineNextState();
+        determine_next_state();
       }
     return 0;
 }

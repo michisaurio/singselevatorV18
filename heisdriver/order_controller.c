@@ -5,9 +5,6 @@
 // matrix that registers orders. 1=existing order. 0=no order or button does not exist.
 static int order_register_matrix[N_FLOORS][N_BUTTONS]={};	//since static, initialize with 0s
 
-printf("%d\n", order_register_matrix[0][0]);
-
-
 // checks if a hall or cab button has been pressed. Registers the order. Turns on corresponding light.
 void check_pressed_floor_button(){
 	for(int button=0; button<N_BUTTONS; button++ ){
@@ -42,7 +39,46 @@ void clear_all_orders(){
 		}
 	}
 }
-// Cab orders are excluded!
+
+//
+int is_cab_order_to_upstairs(int current_floor){
+	for(int floor=N_FLOORS-1;floor>current_floor;floor--){
+		if(get_order_status(BUTTON_COMMAND,floor)==1){
+			return 1;
+		}
+	}
+	return 0;
+}
+//
+int is_cab_order_to_downstairs(int current_floor){
+	for(int floor=0;floor<current_floor;floor++){
+		if(get_order_status(BUTTON_COMMAND,floor)==1){
+			return 1;
+		}
+	}
+	return 0;
+}
+/*
+//
+int is_hall_order_upstairs_to_up(int current_floor){
+	for(int floor=N_FLOORS-1;floor>current_floor;floor--){
+		if(get_order_status(BUTTON_CALL_UP,floor)==1){
+			return 1;
+		}
+	}
+	return 0;
+}
+//
+int is_hall_order_downstairs_to_down(int current_floor){
+	for(int floor=0;floor<current_floor;floor++){
+		if(get_order_status(BUTTON_CALL_DOWN,floor)==1){
+			return 1;
+		}
+	}
+	return 0;
+}
+*/
+// Returns distance. Cab orders are excluded!
 int closest_hall_order_upstairs(int current_floor){
 	int dist = N_FLOORS;
 	for(int floor=N_FLOORS-1;floor>current_floor;floor--){
@@ -54,7 +90,7 @@ int closest_hall_order_upstairs(int current_floor){
 	}
 	return dist;
 }
-// Cab orders are excluded!
+// Returns distance. Cab orders are excluded!
 int closest_hall_order_downstairs(int current_floor){
 	int dist = N_FLOORS;
 	for(int floor=0;floor<current_floor;floor++){
@@ -66,12 +102,17 @@ int closest_hall_order_downstairs(int current_floor){
 	}
 	return dist;
 }
-
-/*
-void updateFloorLights(){
-	int current_floor = elev_get_floor_sensor_signal();
-	if(current_floor>=0){
-		elev_set_floor_indicator(current_floor);
-	}
+//
+int is_order_upstairs(int current_floor){
+	if(is_cab_order_to_upstairs(current_floor)==1 && closest_hall_order_upstairs(current_floor)<N_FLOORS)
+		return 1;
+	else
+		return 0;
 }
-*/
+//
+int is_order_downstairs(int current_floor){
+	if(is_cab_order_to_downstairs(current_floor)==1 && closest_hall_order_downstairs(current_floor)<N_FLOORS)
+		return 1;
+	else
+		return 0;
+}
