@@ -1,4 +1,0 @@
-
-void checkPushedFloorButton();
-
-void updateFloorLights();

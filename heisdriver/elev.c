@@ -144,6 +144,7 @@ void elev_set_button_lamp(elev_button_type_t button, int floor, int value) {
         io_clear_bit(lamp_channel_matrix[floor][button]);
 }
 
+//Eliminar
 int elev_get_button_lamp(elev_button_type_t button, int floor) {
     assert(floor >= 0);
     assert(floor < N_FLOORS);

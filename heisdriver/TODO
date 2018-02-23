@@ -1,3 +1,8 @@
 read motor direction. How?
 STOPPKNAPP.
 
+Mismo formato para todos los nombres
+
+son if(aa==1) y if(aa) equivalentes si aa tan solo toma los valores 0 o 1?
+
+Retornar los archivos elev e io a lo que eran al principio.

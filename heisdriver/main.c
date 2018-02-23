@@ -1,5 +1,5 @@
 #include "elev.h"
-#include "button_lights.h"
+#include "order_controller.h"
 #include "state_machine.h"
 #include <stdio.h>
 //#include <stdlib.h>
@@ -20,8 +20,8 @@ int main() {
             break;
         }
 
+        check_pressed_floor_button();
         determineNextState();
-        checkPushedFloorButton();
       }
     return 0;
 }
