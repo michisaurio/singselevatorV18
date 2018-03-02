@@ -13,7 +13,7 @@ void check_pressed_floor_button(){
 				if(elev_get_button_signal(button,floor)==1){
 					order_register_matrix[floor][button]=1;
 					elev_set_button_lamp(button,floor,1);
-					//printf("Alejandro %d, %d, %d\n",i,j,elev_get_button_lamp(i,j));					
+					//printf("Alejandro %d, %d, %d\n",i,j,elev_get_button_lamp(i,j));
 				}
 			}
 		}
@@ -102,16 +102,20 @@ int closest_hall_order_downstairs(int current_floor){
 	}
 	return dist;
 }
+
+
+
+
 //
 int is_order_upstairs(int current_floor){
-	if(is_cab_order_to_upstairs(current_floor)==1 && closest_hall_order_upstairs(current_floor)<N_FLOORS)
+	if(is_cab_order_to_upstairs(current_floor)==1 || closest_hall_order_upstairs(current_floor)<N_FLOORS)
 		return 1;
 	else
 		return 0;
 }
 //
 int is_order_downstairs(int current_floor){
-	if(is_cab_order_to_downstairs(current_floor)==1 && closest_hall_order_downstairs(current_floor)<N_FLOORS)
+	if(is_cab_order_to_downstairs(current_floor)==1 || closest_hall_order_downstairs(current_floor)<N_FLOORS)
 		return 1;
 	else
 		return 0;

@@ -1,4 +1,5 @@
 #include "door_timer.h"
+#include "elev.h"
 #include <sys/time.h>
 
 #if !defined(NULL)
@@ -13,10 +14,12 @@ void door_timer_start(){
   struct timeval current_time;
   gettimeofday(&current_time, NULL);
   door_timer.start_time = (double)current_time.tv_sec + (double)current_time.tv_usec * .000001;
+  elev_set_door_open_lamp(1);
 }
 
 void door_timer_reset(){
   door_timer.is_timer_on = 0;
+  elev_set_door_open_lamp(0);
 }
 
 void door_timer_update(){
