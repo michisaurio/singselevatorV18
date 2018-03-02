@@ -4,11 +4,18 @@
 #include "door_timer.h"
 #include <stdio.h> // Eliminar mas tarde
 
-// Assumes that we start at IDLE state, on a floor.
+// Assumes that we start at IDLEATFLOOR state, at the 1. floor.
 // Se tiene que iniciar motor_direction igual a DIRN_STOP?
-static state_type_t state = IDLE;
+static state_type_t state = IDLEATFLOOR;
 static elev_motor_direction_t motor_direction = DIRN_STOP;
 double static const open_door_threshold_time = 3.0;
+static int last_floor = 0;
+
+void from_idle_or_drive_to_opendoor(){
+	state = OPENDOOR;
+	door_timer_start();
+	elev_set_motor_direction(DIRN_STOP);
+}
 
 void determine_next_state(){
 
@@ -17,31 +24,28 @@ void determine_next_state(){
 
 	switch(state){
 
-	case IDLE: // In IDLE, sensor_signal>=0, i.e., the elevator is at a floor
-		// From IDLE to OPENDOOR : If button for/at current floor pressed.
-		// If cab button pressed
-		if(get_order_status(BUTTON_COMMAND,sensor_signal)==1){
-			state = OPENDOOR;
-			door_timer_start();
-			//motor_direction = DIRN_STOP;
-			clear_order_status(BUTTON_COMMAND,sensor_signal);
-			printf("The door opens. Somebody fell asleep inside.\n");
-		} // If hall button up pressed
-		else if(get_order_status(BUTTON_CALL_UP,sensor_signal)==1){
-			state = OPENDOOR;
-			door_timer_start();
-			//motor_direction = DIRN_UP;
-			clear_order_status(BUTTON_CALL_UP,sensor_signal);
-			printf("The door opens. Somebody wants to go to up.\n");
-		} // If hall button down pressed
-		else if(get_order_status(BUTTON_CALL_DOWN,sensor_signal)==1){
-			state = OPENDOOR;
-			door_timer_start();
-			//motor_direction = DIRN_DOWN;
-			clear_order_status(BUTTON_CALL_DOWN,sensor_signal);
-			printf("The door opens. Somebody wants to go to down.\n");
+	case IDLEATFLOOR: // In IDLEATFLOOR, sensor_signal>=0, i.e., the elevator is at a floor
+		if (elev_get_stop_signal()) {
+				state = STOPATFLOOR;
+				clear_all_orders();
+				elev_set_door_open_lamp(1);
+				elev_set_stop_lamp(1);
+				break;
 		}
-		else // From IDLE to DRIVE : If button for/at another floor pressed.
+		// From IDLEATFLOOR to OPENDOOR : If button for/at current floor pressed.
+		if(get_order_status(BUTTON_COMMAND,sensor_signal)==1){
+			// If cab button pressed. The door opens. Somebody fell asleep inside.
+			from_idle_or_drive_to_opendoor();
+			clear_order_status(BUTTON_COMMAND,sensor_signal);
+		} else if(get_order_status(BUTTON_CALL_UP,sensor_signal)==1){
+			// If hall button up pressed. The door opens. Somebody wants to go to up.
+			from_idle_or_drive_to_opendoor();
+			clear_order_status(BUTTON_CALL_UP,sensor_signal);
+		}	else if(get_order_status(BUTTON_CALL_DOWN,sensor_signal)==1){
+			// If hall button down pressed. The door opens. Somebody wants to go to down.
+			from_idle_or_drive_to_opendoor();
+			clear_order_status(BUTTON_CALL_DOWN,sensor_signal);
+		} else // From IDLEATFLOOR to DRIVE : If button for/at another floor pressed.
 		{ // A cab button for another floor is pressed : Biased towards up.
 			for(int floor=N_FLOORS-1; floor>sensor_signal; floor--){
 				if(get_order_status(BUTTON_COMMAND,floor)==1){
@@ -76,47 +80,54 @@ void determine_next_state(){
 				printf("Somebody downstairs wants to ride.\n");
 			}
 		}
-		// Otherwise stays at IDLE.
+		// Otherwise stays at IDLEATFLOOR.
 		break;
 
-	case DRIVE: // From IDLE to OPENDOOR : Is necessary that a floor is reached first.
+	case DRIVE: // From IDLEATFLOOR to OPENDOOR : Is necessary that a floor is reached first.
+		if (elev_get_stop_signal()) {
+				state = STOPBETWEENFLOORS;
+				elev_set_motor_direction(DIRN_STOP);
+				clear_all_orders();
+				elev_set_stop_lamp(1);
+				break;
+		}
 		if(sensor_signal>=0){	//A floor is reached
+			last_floor = sensor_signal;
 			elev_set_floor_indicator(sensor_signal);	//Updates floor indicator
 			if(motor_direction==DIRN_UP){
 					if(get_order_status(BUTTON_CALL_UP,sensor_signal) || get_order_status(BUTTON_COMMAND,sensor_signal)){
-						state = OPENDOOR;
-						door_timer_start();
-						elev_set_motor_direction(DIRN_STOP);
+						//The door opens. Somebody goes out or somebody wants to go upstairs
+						from_idle_or_drive_to_opendoor();
 						clear_order_status(BUTTON_CALL_UP, sensor_signal);
 						clear_order_status(BUTTON_COMMAND, sensor_signal);
-						printf("The door opens. Somebody goes out or somebody wants to go upstairs.\n");
 					}else if(!is_order_upstairs(sensor_signal) && get_order_status(BUTTON_CALL_DOWN,sensor_signal)){
-						state = OPENDOOR;
-						door_timer_start();
-						elev_set_motor_direction(DIRN_STOP);
+						//The door opens. Nobody wants upstairs. But somebody wants to go downstairs.
+						from_idle_or_drive_to_opendoor();
 						clear_order_status(BUTTON_CALL_DOWN, sensor_signal);
-						printf("The door opens. Nobody wants upstairs. But somebody wants to go downstairs.\n");
 					}
 			}else if(motor_direction==DIRN_DOWN){
 					if(get_order_status(BUTTON_CALL_DOWN,sensor_signal) || get_order_status(BUTTON_COMMAND,sensor_signal)){
-						state = OPENDOOR;
-						door_timer_start();
-						elev_set_motor_direction(DIRN_STOP);
+						//The door opens. Somebody goes out or somebody wants to go downstairs
+						from_idle_or_drive_to_opendoor();
 						clear_order_status(BUTTON_CALL_DOWN, sensor_signal);
 						clear_order_status(BUTTON_COMMAND, sensor_signal);
-						printf("The door opens. Somebody goes out or somebody wants to go downstairs.\n");
 					}else if(!is_order_downstairs(sensor_signal) && get_order_status(BUTTON_CALL_UP,sensor_signal)){
-						state = OPENDOOR;
-						door_timer_start();
-						elev_set_motor_direction(DIRN_STOP);
+						//The door opens. Nobody wants upstairs. But somebody wants to go upstairs
+						from_idle_or_drive_to_opendoor();
 						clear_order_status(BUTTON_CALL_UP, sensor_signal);
-						printf("The door opens. Nobody wants upstairs. But somebody wants to go upstairs.\n");
 					}
 			}
 		}
 		break;
 
 	case OPENDOOR:
+		if (elev_get_stop_signal()) {
+				state = STOPATFLOOR;
+				clear_all_orders();
+				elev_set_door_open_lamp(1);
+				elev_set_stop_lamp(1);
+				break;
+		}
 		door_timer_update();
 		// Keep cab button for the current floor turned off
 		if(get_order_status(BUTTON_COMMAND, sensor_signal)){
@@ -139,8 +150,8 @@ void determine_next_state(){
 				elev_set_motor_direction(motor_direction);
 				printf("We are going to pick up somebody downstairs.\n");
 				clear_order_status(BUTTON_CALL_DOWN,sensor_signal);
-			} else {// From OPENDOOR to IDLE : no orders upstairs and no orders downstairs
-				state = IDLE;
+			} else {// From OPENDOOR to IDLEATFLOOR : no orders upstairs and no orders downstairs
+				state = IDLEATFLOOR;
 				motor_direction = DIRN_STOP;
 				printf("No more customers.\n");
 			}
@@ -150,7 +161,7 @@ void determine_next_state(){
 				clear_order_status(BUTTON_CALL_UP,sensor_signal);
 			}else if(is_order_downstairs(sensor_signal)==1 && (motor_direction==DIRN_DOWN || motor_direction==DIRN_STOP || is_order_upstairs(sensor_signal)==0)){
 				motor_direction = DIRN_DOWN;
-				clear_order_status(BUTTON_CALL_UP,sensor_signal);
+				clear_order_status(BUTTON_CALL_DOWN,sensor_signal);
 			} else {// no orders upstairs and no orders downstairs
 				clear_order_status(BUTTON_CALL_UP,sensor_signal);
 				clear_order_status(BUTTON_CALL_DOWN,sensor_signal);
@@ -159,9 +170,52 @@ void determine_next_state(){
 		}
 		break;
 
-	case STOPATAFLOOR:
+	case STOPATFLOOR:
+		while(elev_get_stop_signal()){
+					clear_all_orders();
+			}
+			elev_set_stop_lamp(0);
+			state = OPENDOOR;
+			door_timer_start();
+		break;
 
-	case STOPBETWEENFLOORS
+	case STOPBETWEENFLOORS:
+		while(elev_get_stop_signal()){
+					clear_all_orders();
+			}
+			elev_set_stop_lamp(0);
+			state = IDLEBETWEENFLOORS;
+		break;
+
+	case IDLEBETWEENFLOORS:
+		if (elev_get_stop_signal()) {
+				state = STOPBETWEENFLOORS;
+				clear_all_orders();
+				elev_set_stop_lamp(1);
+				break;
+		}
+		if(motor_direction == DIRN_UP){
+			if(is_order_upstairs(last_floor)){
+				state = DRIVE;
+				motor_direction = DIRN_UP;
+				elev_set_motor_direction(motor_direction);
+			} else if(is_order_downstairs(last_floor+1)){
+				state = DRIVE;
+				motor_direction = DIRN_DOWN;
+				elev_set_motor_direction(motor_direction);
+			}
+		}else if(motor_direction == DIRN_DOWN){
+			if(is_order_downstairs(last_floor)){
+				state = DRIVE;
+				motor_direction = DIRN_DOWN;
+				elev_set_motor_direction(motor_direction);
+			}else if(is_order_upstairs(last_floor-1)){
+				state = DRIVE;
+				motor_direction = DIRN_UP;
+				elev_set_motor_direction(motor_direction);
+			}
+		}
+		break;
 
 	default:
 		printf("That was bad luck...");
