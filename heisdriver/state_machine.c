@@ -32,13 +32,14 @@ int initialize_state(){
 	int sensor_signal = elev_get_floor_sensor_signal();
 	if(sensor_signal==-1){
 		elev_set_motor_direction(DIRN_DOWN);
-		while(elev_get_floor_sensor_signal()==-1){
+		while(sensor_signal==-1){
+			sensor_signal=elev_get_floor_sensor_signal();
 		}
-		sensor_signal=elev_get_floor_sensor_signal();
 	}
+	motor_direction = DIRN_STOP;
+	elev_set_motor_direction(DIRN_STOP);
 	last_floor = sensor_signal;
 	state = IDLEATFLOOR;
-	motor_direction = DIRN_STOP;
 	elev_set_floor_indicator(last_floor);
 
 	return 1;
