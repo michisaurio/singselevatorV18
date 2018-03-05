@@ -1,3 +1,11 @@
+Change sensor_signal with last_floor when it makes sense
+
+Initializing routine for last_floor, floor light
+
+Reduce/Simplify OPENDOOR case, IDLEATFLOOR case
+
+Eliminate _to_
+
 read motor direction. How?
 STOPPKNAPP.
 

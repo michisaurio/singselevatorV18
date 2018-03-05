@@ -1,3 +1,4 @@
+#include "elev.h"
 
 typedef enum state_type {
 	IDLEATFLOOR = 0,
@@ -8,6 +9,10 @@ typedef enum state_type {
 	IDLEBETWEENFLOORS
 } state_type_t;
 
+int initialize_state();
+
 void determine_next_state();
 
-void from_idle_or_drive_to_opendoor();
+void set_state_to_opendoor();
+
+void set_state_to_drive(elev_motor_direction_t new_dir);

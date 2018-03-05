@@ -7,17 +7,18 @@
 
 int main() {
     // Initialize hardware
-    if (!elev_init()) {
+    if (!initialize_state()) {
         printf("Unable to initialize elevator hardware!\n");
         return 1;
     }
-    printf("Press STOP button to stop elevator and exit program.\n");
+    printf("Activate 'OBSTRUKSJON' lever to stop elevator and exit program.\n");
 
     while (1) {
         // Stop elevator and exit program if the stop button is pressed
 
         if (elev_get_obstruction_signal()) {
             elev_set_motor_direction(DIRN_STOP);
+            clear_all_orders();
             break;
         }
 

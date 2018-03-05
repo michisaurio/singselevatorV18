@@ -9,7 +9,7 @@
 static door_timer_t door_timer;
 
 // Seconds is KING
-void door_timer_start(){
+void open_door_start_timer(){
   door_timer.is_timer_on = 1;
   struct timeval current_time;
   gettimeofday(&current_time, NULL);
@@ -17,12 +17,12 @@ void door_timer_start(){
   elev_set_door_open_lamp(1);
 }
 
-void door_timer_reset(){
+void close_door_reset_timer(){
   door_timer.is_timer_on = 0;
   elev_set_door_open_lamp(0);
 }
 
-void door_timer_update(){
+void update_door_timer(){
   if(door_timer.is_timer_on == 1){
     struct timeval current_time;
     gettimeofday(&current_time, NULL);

@@ -4,10 +4,10 @@ typedef struct door_timer_struct{
       int is_timer_on;
 } door_timer_t;
 
-void door_timer_start();
+void open_door_start_timer();
 
-void door_timer_reset();
+void close_door_reset_timer();
 
-void door_timer_update();
+void update_door_timer();
 
 int is_elapsed_time_over_threshold(double time_threshold);

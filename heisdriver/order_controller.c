@@ -103,9 +103,6 @@ int closest_hall_order_downstairs(int current_floor){
 	return dist;
 }
 
-
-
-
 //
 int is_order_upstairs(int current_floor){
 	if(is_cab_order_to_upstairs(current_floor)==1 || closest_hall_order_upstairs(current_floor)<N_FLOORS)
