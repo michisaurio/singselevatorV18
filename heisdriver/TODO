@@ -1,3 +1,18 @@
+Check comments:
+  Maybe just a general comment per "code section"
+
+Check names of functions, variables and modules:
+  Same format?
+  door_timer -> door_timer_controller, door_controller
+
+Check included header files:
+  Are all necessary?
+
+Function set_state_to_idle ?
+
+Review specificactions:
+  Are all met?
+
 Change sensor_signal with last_floor when it makes sense
 
 Initializing routine for last_floor, floor light
@@ -6,13 +21,13 @@ Reduce/Simplify OPENDOOR case, IDLEATFLOOR case
 
 Eliminate _to_
 
-read motor direction. How?
-STOPPKNAPP.
+Restore files elev and io to their initial versions
 
-Mismo formato para todos los nombres
 
-son if(aa==1) y if(aa) equivalentes si aa tan solo toma los valores 0 o 1?
+Spoersmaal til studass:
 
-Retornar los archivos elev e io a lo que eran al principio.
+  Hva synes han om modulene og funksjonene: funksjonalitet, navn, etc?
 
-Revisar las condiciones iniciales para motor_direction y state
+  Funksjon initialize_state(). Riktig plassert?
+
+  Funksjoner blir kalt. Men gitt sammenhengen er noen "assignments" overfloedige.
