@@ -29,6 +29,8 @@ void set_state_to_open_door(){
 	move_after_door_closes = 0;
 }
 
+// set_state_to_emergency
+
 int initialize_state(){
 	if (!elev_init()) {
 			return 0;
@@ -145,8 +147,8 @@ void determine_next_state(){
 				move_after_door_closes = 1;
 			}else {// no orders at or to other floors -> No need to move up or down
 				// Necessarly. HERE ?
-				clear_order_status(BUTTON_CALL_UP,sensor_signal);
-				clear_order_status(BUTTON_CALL_DOWN,sensor_signal);
+				//clear_order_status(BUTTON_CALL_UP,sensor_signal);
+				//clear_order_status(BUTTON_CALL_DOWN,sensor_signal);
 			}
 		}
 		if(move_after_door_closes){
@@ -157,6 +159,7 @@ void determine_next_state(){
 			}
 		}
 		if(is_elapsed_time_over_threshold(open_door_threshold_time)){
+			close_door_reset_timer();
 			if(move_after_door_closes){
 				set_state_to_drive(motor_direction);
 			}else{
