@@ -2,11 +2,11 @@
 
 typedef enum state_type {
 	DRIVE = 0,
-	IDLEATFLOOR,
-	IDLEBETWEENFLOORS,
-	OPENDOOR,
-	STOPATFLOOR,
-	STOPBETWEENFLOORS
+	OPEN_DOOR,
+	IDLE_AT_FLOOR,
+	EMERGENCY_AT_FLOOR,
+	IDLE_BETWEEN_FLOORS,
+	EMERGENCY_BETWEEN_FLOORS
 } state_type_t;
 
 void set_state_to_drive(elev_motor_direction_t new_dir);

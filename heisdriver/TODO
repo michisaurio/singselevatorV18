@@ -13,11 +13,9 @@ Function set_state_to_idle ?
 Review specificactions:
   Are all met?
 
-Change sensor_signal with last_floor when it makes sense
-
 Initializing routine for last_floor, floor light
 
-Reduce/Simplify OPENDOOR case, IDLEATFLOOR case
+Reduce/Simplify IDLEATFLOOR case
 
 Change stop dynamics
 
