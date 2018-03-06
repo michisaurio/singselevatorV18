@@ -2,7 +2,7 @@
 #include "elev.h"
 #include "order_controller.h"
 #include "door_timer.h"
-
+#include <stdio.h>
 //
 static state_type_t state;
 static elev_motor_direction_t motor_direction;
@@ -24,7 +24,8 @@ void set_state_to_idle_at_floor(){
 
 void set_state_to_open_door(){
 	state = OPENDOOR;
-	open_door_start_timer();
+	start_door_timer();
+	elev_set_door_open_lamp(1);
 	elev_set_motor_direction(DIRN_STOP);
 	move_after_door_closes = 0;
 }
@@ -137,7 +138,11 @@ void determine_next_state(){
 				break;
 		}
 		update_door_timer();
-		clear_order_status(BUTTON_COMMAND, sensor_signal); // Keep cab button for the current floor turned off
+		if(get_order_status(BUTTON_COMMAND, sensor_signal)){
+			clear_order_status(BUTTON_COMMAND, sensor_signal);
+			reset_door_timer();
+		}
+		 // Keep cab button for the current floor turned off
 		if(!move_after_door_closes){
 			if(is_order_upstairs(sensor_signal) && (motor_direction==DIRN_UP || motor_direction==DIRN_STOP || !is_order_downstairs(sensor_signal))){
 				motor_direction = DIRN_UP;
@@ -145,21 +150,25 @@ void determine_next_state(){
 			}else if(is_order_downstairs(sensor_signal) && (motor_direction==DIRN_DOWN || motor_direction==DIRN_STOP || !is_order_upstairs(sensor_signal))){
 				motor_direction = DIRN_DOWN;
 				move_after_door_closes = 1;
-			}else {// no orders at or to other floors -> No need to move up or down
-				// Necessarly. HERE ?
-				//clear_order_status(BUTTON_CALL_UP,sensor_signal);
-				//clear_order_status(BUTTON_CALL_DOWN,sensor_signal);
+			}else if(get_order_status(BUTTON_CALL_UP, sensor_signal)||get_order_status(BUTTON_CALL_DOWN, sensor_signal)){
+				// no orders at or to other floors -> No need to move up or down
+				clear_order_status(BUTTON_CALL_UP,sensor_signal);
+				clear_order_status(BUTTON_CALL_DOWN,sensor_signal);
+				reset_door_timer();
 			}
 		}
 		if(move_after_door_closes){
-			if(motor_direction==DIRN_UP){
+			if(motor_direction==DIRN_UP || get_order_status(BUTTON_CALL_UP, sensor_signal)){
 				clear_order_status(BUTTON_CALL_UP,sensor_signal);
-			}else if(motor_direction==DIRN_DOWN){
+				reset_door_timer();
+			}else if(motor_direction==DIRN_DOWN || get_order_status(BUTTON_CALL_DOWN,sensor_signal)){
 				clear_order_status(BUTTON_CALL_DOWN,sensor_signal);
+				reset_door_timer();
 			}
 		}
 		if(is_elapsed_time_over_threshold(open_door_threshold_time)){
-			close_door_reset_timer();
+			reset_door_timer();
+			elev_set_door_open_lamp(0);
 			if(move_after_door_closes){
 				set_state_to_drive(motor_direction);
 			}else{
