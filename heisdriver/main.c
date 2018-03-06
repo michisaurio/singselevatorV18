@@ -11,7 +11,7 @@ int main() {
         printf("Unable to initialize elevator hardware!\n");
         return 1;
     }
-    printf("Activate 'OBSTRUKSJON' lever to stop elevator and exit program.\n");
+    printf("Pull 'OBSTRUKSJON' lever to turn stop the elevator and exit program.\n");
 
     while (1) {
         // Stop elevator and exit program if the stop button is pressed
@@ -19,6 +19,8 @@ int main() {
         if (elev_get_obstruction_signal()) {
             elev_set_motor_direction(DIRN_STOP);
             clear_all_orders();
+            elev_set_door_open_lamp(0);
+            elev_set_stop_lamp(0);
             break;
         }
 

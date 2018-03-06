@@ -41,7 +41,7 @@ void clear_all_orders(){
 }
 
 //
-int is_cab_order_to_upstairs(int current_floor){
+int is_cab_order_upstairs(int current_floor){
 	for(int floor=N_FLOORS-1;floor>current_floor;floor--){
 		if(get_order_status(BUTTON_COMMAND,floor)==1){
 			return 1;
@@ -50,7 +50,7 @@ int is_cab_order_to_upstairs(int current_floor){
 	return 0;
 }
 //
-int is_cab_order_to_downstairs(int current_floor){
+int is_cab_order_downstairs(int current_floor){
 	for(int floor=0;floor<current_floor;floor++){
 		if(get_order_status(BUTTON_COMMAND,floor)==1){
 			return 1;
@@ -105,14 +105,14 @@ int closest_hall_order_downstairs(int current_floor){
 
 //
 int is_order_upstairs(int current_floor){
-	if(is_cab_order_to_upstairs(current_floor)==1 || closest_hall_order_upstairs(current_floor)<N_FLOORS)
+	if(is_cab_order_upstairs(current_floor)==1 || closest_hall_order_upstairs(current_floor)<N_FLOORS)
 		return 1;
 	else
 		return 0;
 }
 //
 int is_order_downstairs(int current_floor){
-	if(is_cab_order_to_downstairs(current_floor)==1 || closest_hall_order_downstairs(current_floor)<N_FLOORS)
+	if(is_cab_order_downstairs(current_floor)==1 || closest_hall_order_downstairs(current_floor)<N_FLOORS)
 		return 1;
 	else
 		return 0;
