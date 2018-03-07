@@ -139,7 +139,6 @@ void determine_next_state(){
 				elev_set_stop_lamp(1);
 				break;
 		}
-		update_door_timer();
 		if(get_order_status(BUTTON_COMMAND, last_floor)){
 			clear_order_status(BUTTON_COMMAND, last_floor);
 			reset_door_timer();
@@ -168,6 +167,7 @@ void determine_next_state(){
 				reset_door_timer();
 			}
 		}
+		update_door_timer();
 		if(is_elapsed_time_over_threshold(open_door_threshold_time)){
 			reset_door_timer();
 			elev_set_door_open_lamp(0);
@@ -183,21 +183,19 @@ void determine_next_state(){
 		break;
 
 	case EMERGENCY_AT_FLOOR:
-		if(elev_get_stop_signal()){
-			clear_all_orders();
-		}else{
-			elev_set_stop_lamp(0);
-			set_state_to_open_door();
+		clear_order_status();
+		while(elev_get_stop_signal()){
 		}
+		elev_set_stop_lamp(0);
+		set_state_to_open_door();
 		break;
 
 	case EMERGENCY_BETWEEN_FLOORS:
-		if(elev_get_stop_signal()){
-			clear_all_orders();
-		}else{
-			elev_set_stop_lamp(0);
-			state = IDLEBETWEENFLOORS;
+		clear_all_orders();
+		while(elev_get_stop_signal()){
 		}
+		elev_set_stop_lamp(0);
+		state = IDLEBETWEENFLOORS;
 		break;
 
 	case IDLE_BETWEEN_FLOORS:
