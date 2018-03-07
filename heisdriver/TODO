@@ -23,6 +23,14 @@ Unified Emergency state?
 
 Check indentation
 
+motor_direction to elevator_direction ?
+
+mange warnings i order_controler.h/.c:
+    N_FLOORS not defined
+    implicit conversion between int and buton types
+
+fix ==1 and ==0
+
 Spoersmaal til studass:
 
   Hva synes han om modulene og funksjonene: funksjonalitet, navn, etc?

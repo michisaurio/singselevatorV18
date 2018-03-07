@@ -1,5 +1,6 @@
 #include "door_timer.h"
 #include <sys/time.h>
+#include <stdio.h>
 
 #if !defined(NULL)
     #define NULL ((void*)0)
@@ -28,8 +29,11 @@ void update_door_timer(){
 }
 
 int is_elapsed_time_over_threshold(double time_threshold){
-    if(door_timer.is_timer_on == 1 && door_timer.elapsed_time >= time_threshold)
+    if(door_timer.is_timer_on == 1 && door_timer.elapsed_time > time_threshold){
+    printf("Over time threshold\n");
       return 1;
-    else
+  }else{
+      printf("%f seconds left\n", time_threshold-door_timer.elapsed_time);
       return 0;
+  }
 }

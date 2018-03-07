@@ -17,13 +17,13 @@ void set_state_to_drive(elev_motor_direction_t new_dir){
 }
 
 void set_state_to_idle_at_floor(){
-	state = IDLEATFLOOR;
+	state = IDLE_AT_FLOOR;
 	motor_direction = DIRN_STOP;
 	elev_set_motor_direction(motor_direction);
 }
 
 void set_state_to_open_door(){
-	state = OPENDOOR;
+	state = OPEN_DOOR;
 	start_door_timer();
 	elev_set_door_open_lamp(1);
 	elev_set_motor_direction(DIRN_STOP);
@@ -50,17 +50,16 @@ int initialize_state(){
 
 void determine_next_state(){
 	int sensor_signal;
-	int dist_order_upstairs;
-	int dist_order_downstairs;
+	int dist_closest_cab_order_upstairs;
+	int dist_closest_cab_order_downstairs;
+	int dist_closest_hall_order_upstairs;
+	int dist_closest_hall_order_downstairs;
 
 	switch(state){
 
 	case IDLE_AT_FLOOR: // In IDLEATFLOOR, last_floor>=0, i.e., the elevator is at a floor
 		if (elev_get_stop_signal()) {
 				state = EMERGENCY_AT_FLOOR;
-				clear_all_orders();
-				elev_set_door_open_lamp(1);
-				elev_set_stop_lamp(1);
 				break;
 		}
 		// From IDLEATFLOOR to OPENDOOR : If button for/at current floor pressed.
@@ -72,62 +71,65 @@ void determine_next_state(){
 			// If hall button up pressed. The door opens. Somebody wants to go to up.
 			set_state_to_open_door();
 			clear_order_status(BUTTON_CALL_UP,last_floor);
-		}	else if(get_order_status(BUTTON_CALL_DOWN,last_floor)){
+		} else if(get_order_status(BUTTON_CALL_DOWN,last_floor)){
 			// If hall button down pressed. The door opens. Somebody wants to go to down.
 			set_state_to_open_door();
 			clear_order_status(BUTTON_CALL_DOWN,last_floor);
-		} else { // From IDLEATFLOOR to DRIVE : If button for/at another floor pressed.
+		} else{// From IDLEATFLOOR to DRIVE : If button for/at another floor pressed.
 		 // A cab button for another floor is pressed : Biased towards up. Somebody fell asleep and wants to go up
-				if(is_cab_order_upstairs(last_floor)){
-					set_state_to_drive(DIRN_UP);
-				}else if(is_cab_order_downstairs(last_floor)){
-					set_state_to_drive(DIRN_DOWN);
-				}else{
-				// A hall button at another floor is pressed : Moves towards the closest floor. Biased towards up.
-					dist_order_upstairs   = closest_hall_order_upstairs(last_floor);
-					dist_order_downstairs = closest_hall_order_downstairs(last_floor);
-					if (dist_order_upstairs<N_FLOORS && dist_order_upstairs<=dist_order_downstairs) {
-						set_state_to_drive(DIRN_UP);
-					} else if (dist_order_downstairs<N_FLOORS && dist_order_downstairs<dist_order_upstairs) {
-						set_state_to_drive(DIRN_DOWN);
-					}
-				}
-		}		// Otherwise stays at IDLEATFLOOR.
+			dist_closest_cab_order_upstairs = get_dist_closest_cab_order_upstairs(last_floor);
+			dist_closest_cab_order_downstairs = get_dist_closest_cab_order_downstairs(last_floor);
+			dist_closest_hall_order_upstairs = get_dist_closest_hall_order_upstairs(last_floor);
+			dist_closest_hall_order_downstairs = get_dist_closest_hall_order_downstairs(last_floor);
+			if(dist_closest_cab_order_upstairs<N_FLOORS && dist_closest_cab_order_upstairs<=dist_closest_cab_order_downstairs){
+				set_state_to_drive(DIRN_UP);
+			}else if(dist_closest_cab_order_downstairs<N_FLOORS && dist_closest_cab_order_downstairs<dist_closest_cab_order_upstairs){
+				set_state_to_drive(DIRN_DOWN);
+			}else if(dist_closest_hall_order_upstairs<N_FLOORS && dist_closest_hall_order_upstairs<=dist_closest_hall_order_downstairs){
+				set_state_to_drive(DIRN_UP);
+			}else if(dist_closest_hall_order_downstairs<N_FLOORS && dist_closest_hall_order_downstairs<dist_closest_hall_order_upstairs){
+				set_state_to_drive(DIRN_DOWN);
+			}
+		}
 		break;
 
 	case DRIVE: // From IDLEATFLOOR to OPENDOOR : Is necessary that a floor is reached first.
-		if (elev_get_stop_signal()) {
-				state = EMERGENCY_BETWEEN_FLOORS;
-				elev_set_motor_direction(DIRN_STOP);
-				elev_set_stop_lamp(1);
-				break;
-		}
 		sensor_signal = elev_get_floor_sensor_signal();
+		if (elev_get_stop_signal()) {
+			if(sensor_signal>=0){
+				last_floor = sensor_signal;
+				elev_set_floor_indicator(last_floor);
+				state = EMERGENCY_AT_FLOOR;
+			}else{
+				state = EMERGENCY_BETWEEN_FLOORS;
+			}
+			break;
+		}
 		if(sensor_signal>=0){	//A floor is reached
 			last_floor = sensor_signal;
 			elev_set_floor_indicator(last_floor);	//Updates floor indicator
 			if(motor_direction==DIRN_UP){
-					if(get_order_status(BUTTON_CALL_UP,last_floor) || get_order_status(BUTTON_COMMAND,last_floor)){
-						//The door opens. Somebody goes out or somebody wants to go upstairs
-						set_state_to_open_door();
-						clear_order_status(BUTTON_CALL_UP, last_floor);
-						clear_order_status(BUTTON_COMMAND, last_floor);
-					}else if(!is_order_upstairs(last_floor) && get_order_status(BUTTON_CALL_DOWN,last_floor)){
-						//The door opens. Nobody wants upstairs. But somebody wants to go downstairs.
-						set_state_to_open_door();
-						clear_order_status(BUTTON_CALL_DOWN, last_floor);
-					}
+				if(get_order_status(BUTTON_CALL_UP,last_floor) || get_order_status(BUTTON_COMMAND,last_floor)){
+					//The door opens. Somebody goes out or somebody wants to go upstairs
+					set_state_to_open_door();
+					clear_order_status(BUTTON_CALL_UP, last_floor);
+					clear_order_status(BUTTON_COMMAND, last_floor);
+				}else if(!is_order_upstairs(last_floor) && get_order_status(BUTTON_CALL_DOWN,last_floor)){
+					//The door opens. Nobody wants upstairs. But somebody wants to go downstairs.
+					set_state_to_open_door();
+					clear_order_status(BUTTON_CALL_DOWN, last_floor);
+				}
 			}else if(motor_direction==DIRN_DOWN){
-					if(get_order_status(BUTTON_CALL_DOWN,last_floor) || get_order_status(BUTTON_COMMAND,last_floor)){
-						//The door opens. Somebody goes out or somebody wants to go downstairs
-						set_state_to_open_door();
-						clear_order_status(BUTTON_CALL_DOWN, last_floor);
-						clear_order_status(BUTTON_COMMAND, last_floor);
-					}else if(!is_order_downstairs(last_floor) && get_order_status(BUTTON_CALL_UP,last_floor)){
-						//The door opens. Nobody wants upstairs. But somebody wants to go upstairs
-						set_state_to_open_door();
-						clear_order_status(BUTTON_CALL_UP, last_floor);
-					}
+				if(get_order_status(BUTTON_CALL_DOWN,last_floor) || get_order_status(BUTTON_COMMAND,last_floor)){
+					//The door opens. Somebody goes out or somebody wants to go downstairs
+					set_state_to_open_door();
+					clear_order_status(BUTTON_CALL_DOWN, last_floor);
+					clear_order_status(BUTTON_COMMAND, last_floor);
+				}else if(!is_order_downstairs(last_floor) && get_order_status(BUTTON_CALL_UP,last_floor)){
+					//The door opens. Nobody wants upstairs. But somebody wants to go upstairs
+					set_state_to_open_door();
+					clear_order_status(BUTTON_CALL_UP, last_floor);
+				}
 			}
 		}
 		break;
@@ -135,13 +137,11 @@ void determine_next_state(){
 	case OPEN_DOOR:
 		if (elev_get_stop_signal()) {
 				state = EMERGENCY_AT_FLOOR;
-				elev_set_door_open_lamp(1);
-				elev_set_stop_lamp(1);
 				break;
 		}
 		if(get_order_status(BUTTON_COMMAND, last_floor)){
 			clear_order_status(BUTTON_COMMAND, last_floor);
-			reset_door_timer();
+			start_door_timer();
 		}
 		 // Keep cab button for the current floor turned off
 		if(!move_after_door_closes){
@@ -155,16 +155,16 @@ void determine_next_state(){
 				// no orders at or to other floors -> No need to move up or down
 				clear_order_status(BUTTON_CALL_UP,last_floor);
 				clear_order_status(BUTTON_CALL_DOWN,last_floor);
-				reset_door_timer();
+				start_door_timer();
 			}
 		}
 		if(move_after_door_closes){
-			if(motor_direction==DIRN_UP || get_order_status(BUTTON_CALL_UP, last_floor)){
+			if(motor_direction==DIRN_UP && get_order_status(BUTTON_CALL_UP, last_floor)){
 				clear_order_status(BUTTON_CALL_UP,last_floor);
-				reset_door_timer();
-			}else if(motor_direction==DIRN_DOWN || get_order_status(BUTTON_CALL_DOWN,last_floor)){
+				start_door_timer();
+			}else if(motor_direction==DIRN_DOWN && get_order_status(BUTTON_CALL_DOWN,last_floor)){
 				clear_order_status(BUTTON_CALL_DOWN,last_floor);
-				reset_door_timer();
+				start_door_timer();
 			}
 		}
 		update_door_timer();
@@ -183,7 +183,9 @@ void determine_next_state(){
 		break;
 
 	case EMERGENCY_AT_FLOOR:
-		clear_order_status();
+		clear_all_orders();
+		elev_set_stop_lamp(1);
+		elev_set_door_open_lamp(1);
 		while(elev_get_stop_signal()){
 		}
 		elev_set_stop_lamp(0);
@@ -192,16 +194,17 @@ void determine_next_state(){
 
 	case EMERGENCY_BETWEEN_FLOORS:
 		clear_all_orders();
+		elev_set_stop_lamp(1);
+		elev_set_motor_direction(DIRN_STOP);
 		while(elev_get_stop_signal()){
 		}
 		elev_set_stop_lamp(0);
-		state = IDLEBETWEENFLOORS;
+		state = IDLE_BETWEEN_FLOORS;
 		break;
 
 	case IDLE_BETWEEN_FLOORS:
 		if (elev_get_stop_signal()) {
 				state = EMERGENCY_BETWEEN_FLOORS;
-				elev_set_stop_lamp(1);
 				break;
 		}
 		if(motor_direction == DIRN_UP){
@@ -219,7 +222,7 @@ void determine_next_state(){
 		}
 		break;
 
-	//default:
-		//printf("Emergency!"); No stdhio.h included
+	default:
+		printf("Emergency!");
 	}
 }
