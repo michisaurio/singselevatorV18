@@ -10,4 +10,4 @@ void reset_door_timer();
 
 void update_door_timer();
 
-int is_elapsed_time_over_threshold(double time_threshold);
+int is_elapsed_time_over_threshold();

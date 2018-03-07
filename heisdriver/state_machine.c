@@ -3,12 +3,12 @@
 #include "order_controller.h"
 #include "door_timer.h"
 #include <stdio.h>
+#include <stdlib.h>
 //
 static state_type_t state;
 static elev_motor_direction_t motor_direction;
-double static const open_door_threshold_time = 3.0;
 static int last_floor;
-static int move_after_door_closes = 0;
+static int move_after_door_closes;// = 0;
 
 void set_state_to_drive(elev_motor_direction_t new_dir){
 	state = DRIVE;
@@ -30,8 +30,6 @@ void set_state_to_open_door(){
 	move_after_door_closes = 0;
 }
 
-// set_state_to_emergency
-
 int initialize_state(){
 	if (!elev_init()) {
 			return 0;
@@ -50,10 +48,6 @@ int initialize_state(){
 
 void determine_next_state(){
 	int sensor_signal;
-	int dist_closest_cab_order_upstairs;
-	int dist_closest_cab_order_downstairs;
-	int dist_closest_hall_order_upstairs;
-	int dist_closest_hall_order_downstairs;
 
 	switch(state){
 
@@ -76,19 +70,18 @@ void determine_next_state(){
 			set_state_to_open_door();
 			clear_order_status(BUTTON_CALL_DOWN,last_floor);
 		} else{// From IDLEATFLOOR to DRIVE : If button for/at another floor pressed.
-		 // A cab button for another floor is pressed : Biased towards up. Somebody fell asleep and wants to go up
-			dist_closest_cab_order_upstairs = get_dist_closest_cab_order_upstairs(last_floor);
-			dist_closest_cab_order_downstairs = get_dist_closest_cab_order_downstairs(last_floor);
-			dist_closest_hall_order_upstairs = get_dist_closest_hall_order_upstairs(last_floor);
-			dist_closest_hall_order_downstairs = get_dist_closest_hall_order_downstairs(last_floor);
-			if(dist_closest_cab_order_upstairs<N_FLOORS && dist_closest_cab_order_upstairs<=dist_closest_cab_order_downstairs){
-				set_state_to_drive(DIRN_UP);
-			}else if(dist_closest_cab_order_downstairs<N_FLOORS && dist_closest_cab_order_downstairs<dist_closest_cab_order_upstairs){
-				set_state_to_drive(DIRN_DOWN);
-			}else if(dist_closest_hall_order_upstairs<N_FLOORS && dist_closest_hall_order_upstairs<=dist_closest_hall_order_downstairs){
-				set_state_to_drive(DIRN_UP);
-			}else if(dist_closest_hall_order_downstairs<N_FLOORS && dist_closest_hall_order_downstairs<dist_closest_hall_order_upstairs){
-				set_state_to_drive(DIRN_DOWN);
+			if(2*last_floor+1>=N_FLOORS){
+				if(is_order_upstairs(last_floor)){
+					set_state_to_drive(DIRN_UP);
+				}else if(is_order_downstairs(last_floor)){
+					set_state_to_drive(DIRN_DOWN);
+				}
+			}else{
+				if(is_order_downstairs(last_floor)){
+					set_state_to_drive(DIRN_DOWN);
+				}else if(is_order_upstairs(last_floor)){
+					set_state_to_drive(DIRN_UP);
+				}
 			}
 		}
 		break;
@@ -168,16 +161,13 @@ void determine_next_state(){
 			}
 		}
 		update_door_timer();
-		if(is_elapsed_time_over_threshold(open_door_threshold_time)){
+		if(is_elapsed_time_over_threshold()){
 			reset_door_timer();
 			elev_set_door_open_lamp(0);
 			if(move_after_door_closes){
 				set_state_to_drive(motor_direction);
 			}else{
 				set_state_to_idle_at_floor();
-				// Or Here?
-				//clear_order_status(BUTTON_CALL_UP,last_floor);
-				//clear_order_status(BUTTON_CALL_DOWN,last_floor);
 			}
 		}
 		break;
@@ -212,17 +202,20 @@ void determine_next_state(){
 				set_state_to_drive(DIRN_UP);
 			} else if(is_order_downstairs(last_floor+1)){
 				set_state_to_drive(DIRN_DOWN);
+				last_floor++;
 			}
 		}else if(motor_direction == DIRN_DOWN){
 			if(is_order_downstairs(last_floor)){
 				set_state_to_drive(DIRN_DOWN);
 			}else if(is_order_upstairs(last_floor-1)){
 				set_state_to_drive(DIRN_UP);
+				last_floor--;
 			}
 		}
 		break;
 
 	default:
-		printf("Emergency!");
+		printf("Invalid state. Exit program.");
+   		exit(EXIT_FAILURE);
 	}
 }
