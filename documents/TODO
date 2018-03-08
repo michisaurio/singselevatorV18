@@ -10,17 +10,7 @@ Check included header files:
 Review specificactions:
   Are all met?
 
-Initializing routine for last_floor, floor light
-
-Reduce/Simplify IDLEATFLOOR case
-
-Reduce/Simplify order_controller
-
-It is controller, not controller
-
 Check indentation
-
-motor_direction to elevator_direction ?
 
 mange warnings i order_controler.h/.c:
     N_FLOORS not defined
