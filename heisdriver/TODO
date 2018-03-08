@@ -28,10 +28,17 @@ mange warnings i order_controler.h/.c:
 
 double const open_door_time_threshold = 3.0; //static?
 
-
 fix ==1 and ==0
 
+UML:
+
+  Use case: Button vs. Light
+
+  Activity diagram:
+
 Spoersmaal til studass:
+
+  Alle går inn i heisen når den stopper? Sauetasje?
 
   Hva synes han om modulene og funksjonene: funksjonalitet, navn, etc?
 
