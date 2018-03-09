@@ -11,7 +11,7 @@ static int order_register_matrix[N_FLOORS][N_BUTTONS]={};	//since static, initia
 
 // checks if a hall or cab button has been pressed. Registers the order. Turns on corresponding light.
 void check_pressed_order_button(){
-	for(int button=0; button<N_BUTTONS; button++ ){
+	for(int button=0; button<N_BUTTONS; button++ ){  //int to elev_button_type_t
 		for(int floor=0; floor<N_FLOORS; floor++){
 			if(!(button==BUTTON_CALL_UP && floor==N_FLOORS-1) && !(button==BUTTON_CALL_DOWN && floor==0)){
 				if(elev_get_button_signal(button,floor)){

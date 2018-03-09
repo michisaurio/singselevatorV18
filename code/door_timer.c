@@ -6,7 +6,7 @@
 #endif
 
 static door_timer_t door_timer;
-double const open_door_time_threshold = 3.0; //static?
+double const open_door_time_threshold = 3.0; //static? Yes
 
 // Seconds is KING
 void start_door_timer(){
