@@ -1,5 +1,7 @@
 Check comments:
   Maybe just a general comment per "code section"
+  set_state: References to variables defined in state_machine.c
+  motor_direction to elevator_direction ?
 
 Check names of functions, variables and modules:
   Same format?
