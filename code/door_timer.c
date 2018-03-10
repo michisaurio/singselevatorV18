@@ -2,36 +2,48 @@
 #include <sys/time.h>
 
 #if !defined(NULL)
-    #define NULL ((void*)0)
+#define NULL ((void*)0)
 #endif
 
 static door_timer_t door_timer;
-double const open_door_time_threshold = 3.0; //static? Yes
+double const open_door_time_threshold = 3.0;	//static? Yes
 
 // Seconds is KING
-void start_door_timer(){
+void
+start_door_timer ()
+{
   door_timer.is_timer_on = 1;
   struct timeval current_time;
-  gettimeofday(&current_time, NULL);
-  door_timer.start_time = (double)current_time.tv_sec + (double)current_time.tv_usec * .000001;
+  gettimeofday (&current_time, NULL);
+  door_timer.start_time =
+      (double) current_time.tv_sec + (double) current_time.tv_usec * .000001;
 }
 
-void reset_door_timer(){
+void
+reset_door_timer ()
+{
   door_timer.is_timer_on = 0;
 }
 
-void update_door_timer(){
-  if(door_timer.is_timer_on){
+void
+update_door_timer ()
+{
+  if (door_timer.is_timer_on) {
     struct timeval current_time;
-    gettimeofday(&current_time, NULL);
-    door_timer.elapsed_time = (double)current_time.tv_sec + (double)current_time.tv_usec * .000001 - door_timer.start_time;
+    gettimeofday (&current_time, NULL);
+    door_timer.elapsed_time =
+	(double) current_time.tv_sec +
+	(double) current_time.tv_usec * .000001 - door_timer.start_time;
   }
 }
 
-int is_elapsed_time_over_threshold(){
-    if(door_timer.is_timer_on && door_timer.elapsed_time > open_door_time_threshold){
-      return 1;
-  }else{
-      return 0;
+int
+is_elapsed_time_over_threshold ()
+{
+  if (door_timer.is_timer_on
+      && door_timer.elapsed_time > open_door_time_threshold) {
+    return 1;
+  } else {
+    return 0;
   }
 }

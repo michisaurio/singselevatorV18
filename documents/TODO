@@ -20,6 +20,8 @@ double const open_door_time_threshold = 3.0; //static?
 
 fix ==1 and ==0
 
+Return io and elev and channels to initial version, once more
+
 UML:
 
   Use case: Button vs. Light
