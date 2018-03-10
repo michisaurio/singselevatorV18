@@ -1,3 +1,7 @@
+/* door_timer.c
+See door_timer.h for a general description of the door_timer module.
+*/
+
 #include "door_timer.h"
 #include <sys/time.h>
 
@@ -6,39 +10,38 @@
 #endif
 
 static door_timer_t door_timer;
-double const open_door_time_threshold = 3.0;	//static? Yes
+static const double open_door_time_threshold = 3.0; // in seconds
 
-// Seconds is KING
 void
-start_door_timer ()
+start_door_timer()
 {
   door_timer.is_timer_on = 1;
   struct timeval current_time;
-  gettimeofday (&current_time, NULL);
+  gettimeofday(&current_time, NULL);
   door_timer.start_time =
       (double) current_time.tv_sec + (double) current_time.tv_usec * .000001;
 }
 
 void
-reset_door_timer ()
+reset_door_timer()
 {
   door_timer.is_timer_on = 0;
 }
 
 void
-update_door_timer ()
+update_door_timer()
 {
   if (door_timer.is_timer_on) {
     struct timeval current_time;
     gettimeofday (&current_time, NULL);
     door_timer.elapsed_time =
-	(double) current_time.tv_sec +
-	(double) current_time.tv_usec * .000001 - door_timer.start_time;
+	     (double) current_time.tv_sec +
+	     (double) current_time.tv_usec * .000001 - door_timer.start_time;
   }
 }
 
 int
-is_elapsed_time_over_threshold ()
+is_elapsed_time_over_threshold()
 {
   if (door_timer.is_timer_on
       && door_timer.elapsed_time > open_door_time_threshold) {

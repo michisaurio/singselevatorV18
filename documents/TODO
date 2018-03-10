@@ -1,7 +1,14 @@
 Check comments:
   Maybe just a general comment per "code section"
   set_state: References to variables defined in state_machine.c
-  motor_direction to elevator_direction ?
+  motordirection to elevator_direction ?
+  push -> press
+  if any?
+/*
+*/
+to /* .  */
+  (int)button ?
+  door_timer -> order_controller -> state_machine -> main
 
 Check names of functions, variables and modules:
   Same format?
@@ -14,7 +21,7 @@ Review specificactions:
 
 Check indentation
 
-mange warnings i order_controler.h/.c:
+mange warnings i order_controller.h/.c:
     N_FLOORS not defined
     implicit conversion between int and buton types
 
