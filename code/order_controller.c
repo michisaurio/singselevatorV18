@@ -1,24 +1,19 @@
-/* order_controller.c
-See order_controller.h for a general description of the order_controller module.
-*/
+// order_controller.c
 #include "io.h"
 #include "elev.h"
 #include <stdio.h>
 
-/*
-N_BUTTONS is defined as 3 in elev.c. We could move this definition to elev.h,
-but it was decided not to modify the given files. Hence, N_BUTTONS is "redefined".
-*/
+/* N_BUTTONS is defined as 3 in elev.c. We could move this definition to elev.h,
+   but it was decided not to modify the given files.  */
 #if !defined(N_BUTTONS)
 #define N_BUTTONS 3
 #endif
 
-/*
-order_register_matrix[f][b]=1 if and only if there is an order for at/to floor f
-and button b. order_register_matrix[f][b]=0 if and only if there is no order placed
-for at/to floor f and button b, or such an order can not exist.
-*/
-static int order_register_matrix[N_BUTTONS][N_FLOORS] = { };  // initialized with 0s.
+/* order_register_matrix[f][b]=1 if and only if there is an order for floor f
+   and button b.
+   order_register_matrix[f][b]=0 if and only if there is no order placed
+   for floor f and button b, or such an order cannot exist.  */
+static int order_register_matrix[N_BUTTONS][N_FLOORS] = { }; // initialized with 0.
 
 void
 check_pressed_order_button()
@@ -69,7 +64,7 @@ is_order_upstairs(int current_floor)
 {
   for (elev_button_type_t button = 0; button < N_BUTTONS; button++) {
     for (int floor = N_FLOORS - 1; floor > current_floor; floor--) {
-      if (get_order_status(button, floor) {
+      if (get_order_status(button, floor)) {
         return 1;
       }
     }
@@ -82,7 +77,7 @@ is_order_downstairs(int current_floor)
 {
   for (elev_button_type_t button = 0; button < N_BUTTONS; button++) {
     for (int floor = 0; floor < current_floor; floor++) {
-      if (get_order_status(button, floor) {
+      if (get_order_status(button, floor)) {
         return 1;
       }
     }

@@ -1,9 +1,7 @@
-/*
-main.c
-Main file for the elevator program.
-First the hardware and elevator state are initialized.
-Then new orders are registered and the elevator state is updated indefinitely.
-*/
+/* main.c
+   Main file for the elevator program.
+   First the hardware and elevator state are initialized.
+   Then new orders are registered and the elevator state is updated indefinitely.  */
 #include "order_controller.h"
 #include "state_machine.h"
 #include <stdio.h>

@@ -1,8 +1,4 @@
 Check comments:
-  Maybe just a general comment per "code section"
-  set_state: References to variables defined in state_machine.c
-  motordirection to elevator_direction ?
-  push -> press
   if any?
 /*
 */

@@ -1,7 +1,4 @@
-/* door_timer.c
-See door_timer.h for a general description of the door_timer module.
-*/
-
+// door_timer.c
 #include "door_timer.h"
 #include <sys/time.h>
 
