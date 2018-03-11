@@ -1,10 +1,4 @@
 Check comments:
-  if any?
-/*
-*/
-to /* .  */
-  (int)button ?
-  door_timer -> order_controller -> state_machine -> main
 
 Check names of functions, variables and modules:
   Same format?

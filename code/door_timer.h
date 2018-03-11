@@ -1,9 +1,9 @@
 /* door_timer.h
-   The door_timer module is used to control that the elevator door has been opened
-   for a predefined amount of time (time threshold).  */
+   The door_timer module is used to control that the elevator door has been
+   opened for a predefined amount of time (time threshold).  */
 
-/* A structure for the door timer is implemented.
-   A static variable of this type, named door_timer is defined in door_timer.c.  */
+/* A structure for the door timer is implemented. A static variable of
+   this type, named door_timer is defined in door_timer.c.  */
 typedef struct door_timer_struct
 {
   double start_time;    // in seconds
@@ -14,14 +14,18 @@ typedef struct door_timer_struct
 /* The member variable is_timer_on of door_timer is set equal to 1.
    The member variable start_time of door_timer is set to the time of the day
    in seconds using gettimeofdagy() (see time.h).  */
-void start_door_timer();
+void
+start_door_timer();
 
 // The member variable is_timer_on of door_timer is set equal to 0.
-void reset_door_timer();
+void
+reset_door_timer();
 
 /* Updates the member variable elapsed_time to the time in seconds that has
    passed since the door timer was started.  */
-void update_door_timer();
+void
+update_door_timer();
 
 // Returns 1 if the elapsed time is over the predefined time threshold.
-int is_elapsed_time_over_threshold();
+int
+is_elapsed_time_over_threshold();
