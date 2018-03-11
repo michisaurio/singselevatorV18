@@ -1,25 +1,3 @@
-Check comments:
-
-Check names of functions, variables and modules:
-  Same format?
-
-Check included header files:
-  Are all necessary?
-
-Review specificactions:
-  Are all met?
-
-Check indentation
-
-mange warnings i order_controller.h/.c:
-    N_FLOORS not defined
-    implicit conversion between int and buton types
-
-double const open_door_time_threshold = 3.0; //static?
-
-fix ==1 and ==0
-
-Return io and elev and channels to initial version, once more
 
 UML:
 
@@ -28,15 +6,3 @@ UML:
   Activity diagram:
 
 Spoersmaal til studass:
-
-  Alle går inn i heisen når den stopper? Sauetasje?
-
-  Hva synes han om modulene og funksjonene: funksjonalitet, navn, etc?
-
-  Funksjon initialize_state(). Riktig plassert?
-
-  Funksjoner blir kalt. Men gitt sammenhengen er noen "assignments" overfloedige.
-
-  Hvordan bør man organisere mappa?
-
-  Hvor bør man skrive kommentarene? i .h? i .c?

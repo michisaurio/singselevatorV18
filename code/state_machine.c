@@ -1,4 +1,5 @@
 // state_machine.c
+
 #include "state_machine.h"
 #include "elev.h"
 #include "order_controller.h"
@@ -37,8 +38,8 @@ void
 set_state_to_open_door()
 {
   elevator_state = OPEN_DOOR;
-  elev_set_motor_direction(DIRN_STOP);
-  elev_set_door_open_lamp(1);
+  elev_set_motor_direction(DIRN_STOP);  // First stop...
+  elev_set_door_open_lamp(1); // ...then open door
   start_door_timer();
   move_after_door_closes = 0;
 }
@@ -48,7 +49,7 @@ initialize_state()
 {
   if (!elev_init())
     {
-      return 0;
+      return 0; // Unsuccessful
     }
   last_floor = elev_get_floor_sensor_signal();
   if (last_floor == -1)
@@ -62,7 +63,7 @@ initialize_state()
     }
   set_state_to_idle_at_floor();
   elev_set_floor_indicator(last_floor);
-  return 1;
+  return 1; // Successful
 }
 
 void
@@ -72,7 +73,6 @@ determine_next_state()
 
   switch (elevator_state)
     {
-
       case IDLE_AT_FLOOR:
         // From IDLE_AT_FLOOR to EMERGENCY_AT_FLOOR
         if (elev_get_stop_signal())
@@ -95,9 +95,9 @@ determine_next_state()
           {
             set_state_to_open_door();
             clear_order_status(BUTTON_CALL_DOWN, last_floor);
+          }
       /* From IDLE_AT_FLOOR to DRIVE: Checks if the elevator is at the highest
          or lowest half part, and prioritizes moving towards the closest end. */
-          }
         else if (2*last_floor+1 >= N_FLOORS)
           {
             if (is_order_upstairs(last_floor))
@@ -120,8 +120,8 @@ determine_next_state()
         if (elev_get_stop_signal())
           {
             elev_set_motor_direction(DIRN_STOP);
-            if (sensor_signal >= 0)
-              { // i.e. at a floor
+            if (sensor_signal >= 0) // i.e. at a floor
+              {
               	last_floor = sensor_signal;
               	elev_set_floor_indicator(last_floor);
               	elevator_state = EMERGENCY_AT_FLOOR;
@@ -130,8 +130,8 @@ determine_next_state()
       	        elevator_state = EMERGENCY_BETWEEN_FLOORS;
             break;
           }
-        // i.e. a new floor is reached
-        if (sensor_signal >= 0 && last_floor!=sensor_signal)
+        // Checks if a new floor is reached
+        if (sensor_signal >= 0 && last_floor != sensor_signal)
           {
             last_floor = sensor_signal;
             elev_set_floor_indicator(last_floor);
@@ -191,7 +191,7 @@ determine_next_state()
             start_door_timer();
           }
         /* The new elevator direction after the door closes is set to DIRN_UP
-           if there are any orders at or to floors upstairs and if the elevator
+           if there is an order at or to a floor upstairs and if the elevator
            direction was DIRN_UP or DIRN_STOP. This will also happen if the
            elevator direction was DIRN_DOWN and there only are orders at or to
            floors upstairs.
@@ -213,10 +213,10 @@ determine_next_state()
               {
               	elevator_direction = DIRN_DOWN;
               	move_after_door_closes = 1;
-              /* If there are no orders to or at floors upstairs or downstairs,
-                 pressing the hall order buttons for the current floor only
-                 restarts the door timer. */
               }
+            /* If there are no orders to or at floors upstairs or downstairs,
+               pressing the hall order buttons for the current floor only
+               restarts the door timer. */
             else if (get_order_status(BUTTON_CALL_UP, last_floor)
       		           || get_order_status(BUTTON_CALL_DOWN, last_floor))
               {
@@ -249,7 +249,7 @@ determine_next_state()
         if (is_elapsed_time_over_threshold())
           {
             reset_door_timer();
-            elev_set_door_open_lamp(0);
+            elev_set_door_open_lamp(0); // First close door
             if (move_after_door_closes)
         	       set_state_to_drive(elevator_direction);
             else

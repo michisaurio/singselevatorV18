@@ -5,6 +5,7 @@
    Functions to initialize the elevator state and
    to determine if the current state has to be changed are implemented,
    as well as functions to set to state to particular state values.  */
+
 #include "elev.h"
 
 /* A total of 6 elevator states are considered:
@@ -18,7 +19,7 @@
                        and the stop button is pressed down.
                        Implies: No movement, no orders registered nor taken.
   IDLE_BETWEEN_FLOORS : The elevator is between 2 floors and does not move.
-                        Implies: No order exists.
+                       Implies: No order exists.
   EMERGENCY_BETWEEN_FLOORS: The elevator is between to 2 floors, does not move,
                             and the stop button is pressed down.
                        Implies: No movement, no orders registered nor taken.  */
@@ -59,10 +60,10 @@ initialize_state();
    From IDLE_AT_FLOOR:
      to EMERGENCY_AT_FLOOR: If the stop button is pressed.
      to OPEN_DOOR: If an order button at the current floor is pressed.
-     to DRIVE: If a cab or hall order button at another floor is pressed.
+     to DRIVE: If an order button at another floor is pressed.
    From DRIVE:
      to EMERGENCY_AT_FLOOR: If the stop button is pressed and the elevator
-                            is at a floor.
+                            is located at a floor.
      to EMERGENCY_BETWEEN_FLOORS: If the stop button is pressed and the
                                   elevator is located between 2 floors.
      to OPEN_DOOR: If the elevator reaches a new floor and there is a cab order

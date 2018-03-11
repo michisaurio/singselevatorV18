@@ -1,5 +1,5 @@
 // order_controller.c
-#include "io.h"
+
 #include "elev.h"
 #include <stdio.h>
 
@@ -9,9 +9,9 @@
 #define N_BUTTONS 3
 #endif
 
-/* order_register_matrix[f][b]=1 if and only if there is an order for floor f
+/* order_register_matrix[b][f]=1 if and only if there is an order for floor f
    and button b.
-   order_register_matrix[f][b]=0 if and only if there is no order placed
+   order_register_matrix[b][f]=0 if and only if there is no order placed
    for floor f and button b, or such an order cannot exist.  */
 static int order_register_matrix[N_BUTTONS][N_FLOORS] = { }; // initialized to 0
 
