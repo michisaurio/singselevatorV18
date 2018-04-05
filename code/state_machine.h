@@ -23,7 +23,7 @@
   EMERGENCY_BETWEEN_FLOORS: The elevator is between to 2 floors, does not move,
                             and the stop button is pressed down.
                        Implies: No movement, no orders registered nor taken.  */
-typedef enum elevator_state_type
+typedef enum elevator_state
 {
   DRIVE = 0,
   OPEN_DOOR,
@@ -31,7 +31,7 @@ typedef enum elevator_state_type
   EMERGENCY_AT_FLOOR,
   IDLE_BETWEEN_FLOORS,
   EMERGENCY_BETWEEN_FLOORS
-} elev_state_type_t;
+} elev_state_t;
 
 /* Sets the elevator state to DRIVE: The elevator direction is set to the value
    given by "direction", and the elevator moves accordingly.  */

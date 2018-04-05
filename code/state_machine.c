@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static elev_state_type_t elevator_state;
+static elev_state_t elevator_state;
 /* elevator_direction represents in a broader context the direction the elevator
    is or was moving or is going to move in. If the elevator is moving, it moves
    in accordance with elevator_state. But if the elevator has stopped, the value
